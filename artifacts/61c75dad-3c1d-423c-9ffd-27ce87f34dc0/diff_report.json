@@ -1,0 +1,36 @@
+{
+  "run_id": "61c75dad-3c1d-423c-9ffd-27ce87f34dc0",
+  "summary": {
+    "diff_rate": 0.4,
+    "total_fields": 5,
+    "diff_fields": 2,
+    "strict_mismatches": 1,
+    "strict_max_drift": 0.1,
+    "strict_tolerance_used": 0.05,
+    "schema_breaking": 0,
+    "numeric_drift": 0,
+    "total_requests": 1
+  },
+  "items": [
+    {
+      "path": "/api/orders",
+      "diffs": [
+        {
+          "path": "app_version",
+          "baseline": "v1",
+          "candidate": "v2",
+          "type": "value_mismatch"
+        },
+        {
+          "path": "total_price",
+          "baseline": 100,
+          "candidate": 110,
+          "type": "strict_mismatch",
+          "tolerance": 0.05
+        }
+      ],
+      "diff_count": 2,
+      "schema_breaking": false
+    }
+  ]
+}

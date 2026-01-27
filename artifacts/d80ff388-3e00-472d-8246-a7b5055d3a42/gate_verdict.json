@@ -1,0 +1,21 @@
+{
+  "verdict": "FAIL",
+  "reasons": [
+    {
+      "domain": "diff_engine",
+      "rule_or_metric": "diff_rate",
+      "observed": "0.4",
+      "threshold": "0.05",
+      "time_window": "run",
+      "evidence_link": "/runs/d80ff388-3e00-472d-8246-a7b5055d3a42/artifacts/diff_report.json"
+    },
+    {
+      "domain": "diff_engine",
+      "rule_or_metric": "strict_mismatches",
+      "observed": "1",
+      "threshold": "0",
+      "time_window": "run",
+      "evidence_link": "/runs/d80ff388-3e00-472d-8246-a7b5055d3a42/artifacts/diff_report.json"
+    }
+  ]
+}

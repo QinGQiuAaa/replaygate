@@ -1,0 +1,25 @@
+{
+  "run_id": "10fbfe01-ca06-40c8-97cc-c7bd68419476",
+  "items": [
+    {
+      "service": "order-service",
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "run_id": "10fbfe01-ca06-40c8-97cc-c7bd68419476",
+        "orders_deleted": 2,
+        "cleaned_at": "2026-01-27T15:12:39.856573Z"
+      }
+    },
+    {
+      "service": "inventory-service",
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "run_id": "10fbfe01-ca06-40c8-97cc-c7bd68419476",
+        "restored_qty": 2,
+        "cleaned_at": "2026-01-27T15:12:39.877013Z"
+      }
+    }
+  ]
+}

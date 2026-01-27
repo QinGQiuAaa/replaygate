@@ -1,0 +1,22 @@
+{
+  "run_id": "c4566784-6b97-4d68-bb51-63d22b274dd1",
+  "summary": {
+    "diff_rate": 0.0,
+    "total_fields": 2,
+    "diff_fields": 0,
+    "strict_mismatches": 0,
+    "strict_max_drift": 0.1,
+    "strict_tolerance_used": 0.15,
+    "schema_breaking": 0,
+    "numeric_drift": 0,
+    "total_requests": 1
+  },
+  "items": [
+    {
+      "path": "/api/orders",
+      "diffs": [],
+      "diff_count": 0,
+      "schema_breaking": false
+    }
+  ]
+}

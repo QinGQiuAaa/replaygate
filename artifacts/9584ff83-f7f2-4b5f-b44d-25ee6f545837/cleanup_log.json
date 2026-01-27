@@ -1,0 +1,25 @@
+{
+  "run_id": "9584ff83-f7f2-4b5f-b44d-25ee6f545837",
+  "items": [
+    {
+      "service": "order-service",
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "run_id": "9584ff83-f7f2-4b5f-b44d-25ee6f545837",
+        "orders_deleted": 2,
+        "cleaned_at": "2026-01-27T15:14:56.689187Z"
+      }
+    },
+    {
+      "service": "inventory-service",
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "run_id": "9584ff83-f7f2-4b5f-b44d-25ee6f545837",
+        "restored_qty": 2,
+        "cleaned_at": "2026-01-27T15:14:56.715584Z"
+      }
+    }
+  ]
+}

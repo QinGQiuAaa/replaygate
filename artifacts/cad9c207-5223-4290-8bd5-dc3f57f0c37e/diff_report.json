@@ -1,0 +1,30 @@
+{
+  "run_id": "cad9c207-5223-4290-8bd5-dc3f57f0c37e",
+  "summary": {
+    "diff_rate": 0.0,
+    "total_fields": 2,
+    "diff_fields": 0,
+    "strict_mismatches": 1,
+    "strict_max_drift": 0.1,
+    "strict_tolerance_used": 0.05,
+    "schema_breaking": 0,
+    "numeric_drift": 0,
+    "total_requests": 1
+  },
+  "items": [
+    {
+      "path": "/api/orders",
+      "diffs": [
+        {
+          "path": "total_price",
+          "baseline": 100,
+          "candidate": 110,
+          "type": "strict_mismatch",
+          "tolerance": 0.05
+        }
+      ],
+      "diff_count": 1,
+      "schema_breaking": false
+    }
+  ]
+}

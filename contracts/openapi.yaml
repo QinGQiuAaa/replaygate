@@ -1,0 +1,307 @@
+﻿openapi: 3.0.3
+info:
+  title: ReplayGate Platform API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /runs:
+    get:
+      summary: List runs
+      responses:
+        '200':
+          description: A list of runs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunListResponse'
+    post:
+      summary: Create a run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RunCreateRequest'
+      responses:
+        '201':
+          description: Run created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+  /runs/{id}:
+    get:
+      summary: Get run detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Run detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Run'
+        '404':
+          description: Run not found
+  /runs/{id}/verdict:
+    get:
+      summary: Get run verdict
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Run verdict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Verdict'
+        '404':
+          description: Verdict not found
+  /runs/{id}/artifacts:
+    get:
+      summary: List run artifacts
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Artifact list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactListResponse'
+  /runs/{id}/artifacts/{name}:
+    get:
+      summary: Download artifact
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Artifact file
+  /runs/{id}/cleanup:
+    post:
+      summary: Cleanup run side effects
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Cleanup result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CleanupResponse'
+components:
+  schemas:
+    RunListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Run'
+    RunCreateRequest:
+      type: object
+      required:
+        - name
+        - recording_id
+        - baseline_base_url
+        - candidate_base_url
+      properties:
+        name:
+          type: string
+        recording_id:
+          type: string
+        baseline_base_url:
+          type: string
+        candidate_base_url:
+          type: string
+        baseline_version:
+          type: string
+          default: v1
+        candidate_version:
+          type: string
+          default: v2
+        strict_tolerance:
+          type: number
+          default: 0.05
+        rules:
+          $ref: '#/components/schemas/DiffRules'
+        thresholds:
+          $ref: '#/components/schemas/GateThresholds'
+    Run:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, RUNNING, COMPLETED, FAILED]
+        recording_id:
+          type: string
+        baseline_base_url:
+          type: string
+        candidate_base_url:
+          type: string
+        baseline_version:
+          type: string
+        candidate_version:
+          type: string
+        strict_tolerance:
+          type: number
+        rules:
+          $ref: '#/components/schemas/DiffRules'
+        thresholds:
+          $ref: '#/components/schemas/GateThresholds'
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+        diff_summary:
+          $ref: '#/components/schemas/DiffSummary'
+        verdict:
+          $ref: '#/components/schemas/Verdict'
+        error_message:
+          type: string
+          nullable: true
+    DiffRules:
+      type: object
+      properties:
+        global_ignore:
+          type: array
+          items:
+            type: string
+        endpoint_rules:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EndpointRule'
+        numeric_tolerance:
+          type: number
+    EndpointRule:
+      type: object
+      properties:
+        ignore:
+          type: array
+          items:
+            type: string
+        strict:
+          type: array
+          items:
+            type: string
+        numeric_tolerance:
+          type: number
+    DiffSummary:
+      type: object
+      properties:
+        diff_rate:
+          type: number
+        total_fields:
+          type: integer
+        diff_fields:
+          type: integer
+        strict_mismatches:
+          type: integer
+        strict_max_drift:
+          type: number
+        strict_tolerance_used:
+          type: number
+        schema_breaking:
+          type: integer
+        numeric_drift:
+          type: integer
+        total_requests:
+          type: integer
+    GateThresholds:
+      type: object
+      properties:
+        max_diff_rate:
+          type: number
+          default: 0.05
+        max_schema_breaking:
+          type: integer
+          default: 0
+        max_strict_mismatches:
+          type: integer
+          default: 0
+    Verdict:
+      type: object
+      properties:
+        verdict:
+          type: string
+          enum: [PASS, FAIL]
+        reasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerdictReason'
+    VerdictReason:
+      type: object
+      properties:
+        domain:
+          type: string
+        rule_or_metric:
+          type: string
+        observed:
+          type: string
+        threshold:
+          type: string
+        time_window:
+          type: string
+        evidence_link:
+          type: string
+    ArtifactListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArtifactItem'
+    ArtifactItem:
+      type: object
+      properties:
+        name:
+          type: string
+        size_bytes:
+          type: integer
+        download_url:
+          type: string
+    CleanupResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        cleaned_at:
+          type: string
+          format: date-time

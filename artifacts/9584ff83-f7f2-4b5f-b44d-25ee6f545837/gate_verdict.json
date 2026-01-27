@@ -1,0 +1,13 @@
+{
+  "verdict": "PASS",
+  "reasons": [
+    {
+      "domain": "diff_engine",
+      "rule_or_metric": "strict_tolerance",
+      "observed": "0.1",
+      "threshold": "0.15",
+      "time_window": "run",
+      "evidence_link": "/runs/9584ff83-f7f2-4b5f-b44d-25ee6f545837/artifacts/diff_report.json"
+    }
+  ]
+}

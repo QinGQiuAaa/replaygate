@@ -1,0 +1,29 @@
+{
+  "run_id": "10fbfe01-ca06-40c8-97cc-c7bd68419476",
+  "summary": {
+    "diff_rate": 0.2,
+    "total_fields": 5,
+    "diff_fields": 1,
+    "strict_mismatches": 0,
+    "strict_max_drift": 0.1,
+    "strict_tolerance_used": 0.15,
+    "schema_breaking": 0,
+    "numeric_drift": 0,
+    "total_requests": 1
+  },
+  "items": [
+    {
+      "path": "/api/orders",
+      "diffs": [
+        {
+          "path": "app_version",
+          "baseline": "v1",
+          "candidate": "v2",
+          "type": "value_mismatch"
+        }
+      ],
+      "diff_count": 1,
+      "schema_breaking": false
+    }
+  ]
+}

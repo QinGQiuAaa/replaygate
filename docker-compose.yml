@@ -1,0 +1,123 @@
+﻿version: '3.9'
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: replaygate
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  flashsale-inventory:
+    build: ./flashsale-lite/inventory-service
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/replaygate
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '8002:8002'
+
+  flashsale-order:
+    build: ./flashsale-lite/order-service
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/replaygate
+      REDIS_URL: redis://redis:6379/0
+      INVENTORY_SERVICE_URL: http://flashsale-inventory:8002
+      NOTIFY_SERVICE_URL: http://flashsale-notify:8003
+    depends_on:
+      - postgres
+      - redis
+      - flashsale-inventory
+    ports:
+      - '8001:8001'
+
+  flashsale-notify:
+    build: ./flashsale-lite/notify-service
+    ports:
+      - '8003:8003'
+
+  flashsale-gateway:
+    build: ./flashsale-lite/gateway
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      ORDER_SERVICE_URL: http://flashsale-order:8001
+      INVENTORY_SERVICE_URL: http://flashsale-inventory:8002
+      NOTIFY_SERVICE_URL: http://flashsale-notify:8003
+    depends_on:
+      - flashsale-order
+      - flashsale-inventory
+      - redis
+    ports:
+      - '8000:8000'
+
+  diff-engine:
+    build: ./replaygate-platform/diff-engine
+    ports:
+      - '8090:8090'
+
+  gate:
+    build: ./replaygate-platform/gate
+    ports:
+      - '8091:8091'
+
+  platform-api:
+    build: ./replaygate-platform/platform-api
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/replaygate
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      ARTIFACTS_DIR: /artifacts
+      ORDER_SERVICE_URL: http://flashsale-order:8001
+      INVENTORY_SERVICE_URL: http://flashsale-inventory:8002
+    depends_on:
+      - postgres
+      - rabbitmq
+    ports:
+      - '8080:8080'
+    volumes:
+      - ./artifacts:/artifacts
+
+  replay-worker:
+    build: ./replaygate-platform/replay-worker
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres:5432/replaygate
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      GATEWAY_URL: http://flashsale-gateway:8000
+      DIFF_ENGINE_URL: http://diff-engine:8090
+      GATE_URL: http://gate:8091
+      ARTIFACTS_DIR: /artifacts
+    depends_on:
+      - postgres
+      - rabbitmq
+      - diff-engine
+      - gate
+      - flashsale-gateway
+    volumes:
+      - ./artifacts:/artifacts
+
+  console-web:
+    build: ./console-web
+    environment:
+      VITE_API_BASE: http://localhost:8080
+    ports:
+      - '5173:5173'
+    depends_on:
+      - platform-api
+
+volumes:
+  pgdata:
