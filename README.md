@@ -1,8 +1,8 @@
-# ReplayGate Mono-Repo (Final)
+# ReplayGate Mono-Repo 
 
-> FlashSale-Lite + ReplayGate Æ½Ì¨ + Vue3 ¿ØÖÆÌ¨£¨Local + K8s Ö´ĞĞÆ÷£©¡£
+> FlashSale-Lite + ReplayGate å¹³å° + Vue3 æ§åˆ¶å°ï¼ˆLocal + K8s æ‰§è¡Œå™¨ï¼‰ã€‚
 
-## ¼Ü¹¹Í¼
+## æ¶æ„å›¾
 
 ```mermaid
 graph TD
@@ -26,59 +26,59 @@ graph TD
   Prom --> Grafana
 ```
 
-## ¿ìËÙ¿ªÊ¼£¨Local£©
+## å¿«é€Ÿå¼€å§‹ï¼ˆLocalï¼‰
 
-1. Æô¶¯È«²¿·şÎñ
+1. å¯åŠ¨å…¨éƒ¨æœåŠ¡
 
 ```powershell
 docker compose up -d --build
 ```
 
-2. Ò»¼ü Demo£¨Windows PowerShell£©
+2. ä¸€é”® Demoï¼ˆWindows PowerShellï¼‰
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\demo.ps1
 ```
 
-3. ´ò¿ª¿ØÖÆÌ¨
+3. æ‰“å¼€æ§åˆ¶å°
 
 - Console: http://localhost:5173
 - Platform API: http://localhost:8080
 
-## Quick Demo£¨Local£©
+## Quick Demoï¼ˆLocalï¼‰
 
-1. Æô¶¯ºËĞÄ·şÎñ£¨platform-api / diff-engine / gate / replay-worker / console-web / prometheus / grafana£©
+1. å¯åŠ¨æ ¸å¿ƒæœåŠ¡ï¼ˆplatform-api / diff-engine / gate / replay-worker / console-web / prometheus / grafanaï¼‰
 
 ```powershell
 docker compose up -d --build
 ```
 
-2. ´¥·¢ FAIL£¨strict_tolerance Ä¬ÈÏ 0.05£©
+2. è§¦å‘ FAILï¼ˆstrict_tolerance é»˜è®¤ 0.05ï¼‰
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\demo.ps1
 ```
 
-3. ´¥·¢ PASS£¨strict_tolerance µ÷µ½ 0.15£©
+3. è§¦å‘ PASSï¼ˆstrict_tolerance è°ƒåˆ° 0.15ï¼‰
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\demo.ps1 -StrictTolerance 0.15
 ```
 
-ËµÃ÷£º
-- PASS/FAIL ÓÉ `gate_verdict.json` µÄ `reasons` ½âÊÍ£¨`observed` vs `threshold`£©¡£
-- Ã¿´Î run µÄ²úÎïÄ¿Â¼ÔÚ `\artifacts\<run_id>\`£¬¿ÉÖ±½Ó´ò¿ª JSON ²é¿´¡£
-- `\artifacts\index.html` Ìá¹©¾ÛºÏÈë¿Ú¡£
+è¯´æ˜ï¼š
+- PASS/FAIL ç”± `gate_verdict.json` çš„ `reasons` è§£é‡Šï¼ˆ`observed` vs `threshold`ï¼‰ã€‚
+- æ¯æ¬¡ run çš„äº§ç‰©ç›®å½•åœ¨ `\artifacts\<run_id>\`ï¼Œå¯ç›´æ¥æ‰“å¼€ JSON æŸ¥çœ‹ã€‚
+- `\artifacts\index.html` æä¾›èšåˆå…¥å£ã€‚
 
-## Quick Demo£¨K8s Ö´ĞĞÆ÷£©
+## Quick Demoï¼ˆK8s æ‰§è¡Œå™¨ï¼‰
 
-1. Æô¶¯ kind ²¢¼ÓÔØ runner job ¾µÏñ
+1. å¯åŠ¨ kind å¹¶åŠ è½½ runner job é•œåƒ
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\kind-up.ps1
 ```
 
-2. ÉèÖÃ K8s »·¾³²¢Æô¶¯·şÎñ
+2. è®¾ç½® K8s ç¯å¢ƒå¹¶å¯åŠ¨æœåŠ¡
 
 ```powershell
 $env:ENABLE_K8S_EXECUTOR="true"
@@ -91,32 +91,32 @@ $env:K8S_ARTIFACTS_HOST_PATH="/artifacts"
 docker compose up -d --build
 ```
 
-3. ÔÚ¿ØÖÆÌ¨´´½¨ Run£¬Ñ¡ÔñÖ´ĞĞÆ÷Îª `k8s` ²¢¹´Ñ¡ `replay, perf`¡£
+3. åœ¨æ§åˆ¶å°åˆ›å»º Runï¼Œé€‰æ‹©æ‰§è¡Œå™¨ä¸º `k8s` å¹¶å‹¾é€‰ `replay, perf`ã€‚
 
-## Ò»¼ü Demo Á÷³Ì
+## ä¸€é”® Demo æµç¨‹
 
-½Å±¾»á×Ô¶¯Ö´ĞĞ£º
+è„šæœ¬ä¼šè‡ªåŠ¨æ‰§è¡Œï¼š
 
-1) Éú³ÉÂ¼ÖÆÁ÷Á¿£¨recording_id=demo£©
-2) ´´½¨ run ¡ú replay-worker Ö´ĞĞ»Ø·Å
-3) Diff ÒıÇæ¼ÆËã²îÒì ¡ú Gate Êä³ö PASS/FAIL
-4) Õ¹Ê¾ Artifacts£¨Æ½Ì¨×Ô¶¯ cleanup£©
+1) ç”Ÿæˆå½•åˆ¶æµé‡ï¼ˆrecording_id=demoï¼‰
+2) åˆ›å»º run â†’ replay-worker æ‰§è¡Œå›æ”¾
+3) Diff å¼•æ“è®¡ç®—å·®å¼‚ â†’ Gate è¾“å‡º PASS/FAIL
+4) å±•ç¤º Artifactsï¼ˆå¹³å°è‡ªåŠ¨ cleanupï¼‰
 
-## ÈçºÎÖÆÔì v1/v2 ²îÒì²¢´¥·¢ FAIL
+## å¦‚ä½•åˆ¶é€  v1/v2 å·®å¼‚å¹¶è§¦å‘ FAIL
 
-`order-service` ÄÚÖÃ°æ±¾²îÒì£º
-- v1£º°´µ¥¼Û 100 ¼ÆËã
-- v2£º°´µ¥¼Û *1.1£¨+10%£©¼ÆËã
+`order-service` å†…ç½®ç‰ˆæœ¬å·®å¼‚ï¼š
+- v1ï¼šæŒ‰å•ä»· 100 è®¡ç®—
+- v2ï¼šæŒ‰å•ä»· *1.1ï¼ˆ+10%ï¼‰è®¡ç®—
 
-Diff ¹æÔòÖĞ `total_price` ÎªÑÏ¸ñ×Ö¶Î£¨strict£©£¬Í¬Ê±È«¾ÖÈİÈÌ¶ÈÎª 5%¡£
-Òò´ËÔÚ´´½¨ run Ê±£º
+Diff è§„åˆ™ä¸­ `total_price` ä¸ºä¸¥æ ¼å­—æ®µï¼ˆstrictï¼‰ï¼ŒåŒæ—¶å…¨å±€å®¹å¿åº¦ä¸º 5%ã€‚
+å› æ­¤åœ¨åˆ›å»º run æ—¶ï¼š
 
 - baseline_version = v1
 - candidate_version = v2
 
-»á´¥·¢ `strict_mismatch` ²¢×îÖÕ FAIL¡£
+ä¼šè§¦å‘ `strict_mismatch` å¹¶æœ€ç»ˆ FAILã€‚
 
-## ¶Ë¿ÚÇåµ¥
+## ç«¯å£æ¸…å•
 
 - 5173: console-web
 - 8080: platform-api
@@ -131,13 +131,13 @@ Diff ¹æÔòÖĞ `total_price` ÎªÑÏ¸ñ×Ö¶Î£¨strict£©£¬Í¬Ê±È«¾ÖÈİÈÌ¶ÈÎª 5%¡£
 - 5432: PostgreSQL
 - 6379: Redis
 - 5672: RabbitMQ
-- 15672: RabbitMQ ¹ÜÀíÌ¨
+- 15672: RabbitMQ ç®¡ç†å°
 
 ## Artifacts
 
-Ã¿´Î run »áÉú³ÉÄ¿Â¼£º`\artifacts\<run_id>\`
+æ¯æ¬¡ run ä¼šç”Ÿæˆç›®å½•ï¼š`\artifacts\<run_id>\`
 
-Ä¿Â¼½á¹¹Ê¾Àı£º
+ç›®å½•ç»“æ„ç¤ºä¾‹ï¼š
 
 ```
 artifacts/
@@ -154,36 +154,36 @@ artifacts/
     obs_report.json
 ```
 
-ÎÄ¼şËµÃ÷£º
-- diff_report.json£ºÖğ½Ó¿Ú²îÒìÃ÷Ï¸Óë¾ÛºÏÍ³¼Æ£¨diff summary£©¡£
-- gate_verdict.json£ºÃÅ½û×îÖÕ½áÂÛÓëÔ­Òò£¨source of truth£©¡£
-- replay_stats.json£º»Ø·ÅÍ³¼Æ£¨ÇëÇóÊı¡¢ºÄÊ±¡¢´íÎóÊıµÈ£©¡£
-- replay_log.txt£º»Ø·Å¹ı³ÌÈÕÖ¾£¨worker ²à²ú³ö£©¡£
-- perf_report.json£ºĞÔÄÜÃÅ½û½á¹ûÓëÕªÒª¡£
-- security_report.json£º°²È«É¨ÃèÕªÒª¡£
-- compat_report.json£ºAPI schema ¼æÈİĞÔ½á¹û¡£
-- obs_report.json£º¿É¹Û²âÃÅ½û½á¹û£¨error_rate / p99£©¡£
-- cleanup_log.json£ºÇåÀí¸±×÷ÓÃµÄÖ´ĞĞ¼ÇÂ¼¡£
+æ–‡ä»¶è¯´æ˜ï¼š
+- diff_report.jsonï¼šé€æ¥å£å·®å¼‚æ˜ç»†ä¸èšåˆç»Ÿè®¡ï¼ˆdiff summaryï¼‰ã€‚
+- gate_verdict.jsonï¼šé—¨ç¦æœ€ç»ˆç»“è®ºä¸åŸå› ï¼ˆsource of truthï¼‰ã€‚
+- replay_stats.jsonï¼šå›æ”¾ç»Ÿè®¡ï¼ˆè¯·æ±‚æ•°ã€è€—æ—¶ã€é”™è¯¯æ•°ç­‰ï¼‰ã€‚
+- replay_log.txtï¼šå›æ”¾è¿‡ç¨‹æ—¥å¿—ï¼ˆworker ä¾§äº§å‡ºï¼‰ã€‚
+- perf_report.jsonï¼šæ€§èƒ½é—¨ç¦ç»“æœä¸æ‘˜è¦ã€‚
+- security_report.jsonï¼šå®‰å…¨æ‰«ææ‘˜è¦ã€‚
+- compat_report.jsonï¼šAPI schema å…¼å®¹æ€§ç»“æœã€‚
+- obs_report.jsonï¼šå¯è§‚æµ‹é—¨ç¦ç»“æœï¼ˆerror_rate / p99ï¼‰ã€‚
+- cleanup_log.jsonï¼šæ¸…ç†å‰¯ä½œç”¨çš„æ‰§è¡Œè®°å½•ã€‚
 
-## ¿É¹Û²âĞÔ
+## å¯è§‚æµ‹æ€§
 
-- /metrics£ºPlatform ±©Â¶ Prometheus Ö¸±ê£¨replay_requests_total / replay_errors_total / run_error_rate / run_rps / run_latency_ms_*£©
+- /metricsï¼šPlatform æš´éœ² Prometheus æŒ‡æ ‡ï¼ˆreplay_requests_total / replay_errors_total / run_error_rate / run_rps / run_latency_ms_*ï¼‰
 - Prometheus: http://localhost:9090
-- Grafana: http://localhost:3000£¨admin/admin£©
+- Grafana: http://localhost:3000ï¼ˆadmin/adminï¼‰
 
-## ½Ó¿ÚÆõÔ¼
+## æ¥å£å¥‘çº¦
 
 - OpenAPI: `contracts/openapi.yaml`
-- Ç°¶ËÀàĞÍ£º`console-web/src/types/api.ts`
+- å‰ç«¯ç±»å‹ï¼š`console-web/src/types/api.ts`
 
 ## Troubleshooting
 
-- console-web ÎŞ·¨·ÃÎÊ£ºÈ·ÈÏ `docker compose ps` ÖĞ console-web Îª Running¡£
-- K8s executor Ê§°Ü£ºÈ·ÈÏ kind ÔËĞĞ¡¢job ¾µÏñÒÑ¼ÓÔØ¡¢`host.docker.internal` ¿ÉÓÃ¡£
-- /metrics ÎŞÊı¾İ£ºÏÈÅÜÒ»´Î demo£¬È·±£ run ÒÑÍê³É²¢²ú³ö replay/perf ½á¹û¡£
+- console-web æ— æ³•è®¿é—®ï¼šç¡®è®¤ `docker compose ps` ä¸­ console-web ä¸º Runningã€‚
+- K8s executor å¤±è´¥ï¼šç¡®è®¤ kind è¿è¡Œã€job é•œåƒå·²åŠ è½½ã€`host.docker.internal` å¯ç”¨ã€‚
+- /metrics æ— æ•°æ®ï¼šå…ˆè·‘ä¸€æ¬¡ demoï¼Œç¡®ä¿ run å·²å®Œæˆå¹¶äº§å‡º replay/perf ç»“æœã€‚
 
 ## Design Notes
 
-- Local vs K8s£ºLocal Ö´ĞĞÆ÷Ö±½ÓÔÚ worker ÄÚÔËĞĞ runner£»K8s Ö´ĞĞÆ÷½« replay/perf ×÷Îª Job ÔËĞĞ£¬½á¹û»ØĞ´µ½ artifacts¡£
-- ÃÅ½û¾ÛºÏ²ßÂÔ£ºÈÎÒ» runner FAIL => overall FAIL£»Ã¿¸ö runner Êä³ö reasons£¨observed vs threshold£©¡£
-- ¿É¹Û²âÃÅ½û£ºobs runner »ùÓÚ perf_report.json ÆÀ¹À error_rate Óë p99¡£
+- Local vs K8sï¼šLocal æ‰§è¡Œå™¨ç›´æ¥åœ¨ worker å†…è¿è¡Œ runnerï¼›K8s æ‰§è¡Œå™¨å°† replay/perf ä½œä¸º Job è¿è¡Œï¼Œç»“æœå›å†™åˆ° artifactsã€‚
+- é—¨ç¦èšåˆç­–ç•¥ï¼šä»»ä¸€ runner FAIL => overall FAILï¼›æ¯ä¸ª runner è¾“å‡º reasonsï¼ˆobserved vs thresholdï¼‰ã€‚
+- å¯è§‚æµ‹é—¨ç¦ï¼šobs runner åŸºäº perf_report.json è¯„ä¼° error_rate ä¸ p99ã€‚
