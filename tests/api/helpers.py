@@ -3,18 +3,53 @@ import time
 from typing import Any
 
 import httpx
+import psycopg2
 from tenacity import retry, stop_after_attempt, wait_fixed
 
 RG_GATEWAY_BASE = os.getenv("RG_GATEWAY_BASE", "http://localhost:8000")
 RG_GATEWAY_DOCKER_URL = os.getenv("RG_GATEWAY_DOCKER_URL", "http://flashsale-gateway:8000")
+RG_ORDER_BASE = os.getenv("RG_ORDER_BASE", "http://localhost:8001")
+RG_INVENTORY_BASE = os.getenv("RG_INVENTORY_BASE", "http://localhost:8002")
+RG_DB_DSN = os.getenv("RG_DB_DSN", "postgresql://postgres:postgres@localhost:5432/replaygate")
+
+
+def ensure_inventory(sku: str = "SKU-1", qty: int = 1000) -> None:
+    try:
+        with psycopg2.connect(RG_DB_DSN) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT qty FROM fs_inventory WHERE sku = %s", (sku,))
+                row = cur.fetchone()
+                if row is None:
+                    cur.execute("INSERT INTO fs_inventory (sku, qty) VALUES (%s, %s)", (sku, qty))
+                else:
+                    cur.execute("UPDATE fs_inventory SET qty = %s WHERE sku = %s", (qty, sku))
+    except Exception:
+        # Best effort; tests will retry seeding if this fails.
+        pass
 
 
 def seed_recording(recording_id: str, gateway_base: str | None = None) -> None:
     gateway = gateway_base or RG_GATEWAY_BASE
-    httpx.post(f"{gateway}/api/recordings/{recording_id}/clear", timeout=10)
+    ensure_inventory()
     payload = {"sku": "SKU-1", "qty": 1, "user_id": "pytest"}
-    headers = {"X-Recording-Id": recording_id}
-    httpx.post(f"{gateway}/api/orders", json=payload, headers=headers, timeout=10)
+    seed_run_id = f"seed-{recording_id}-{int(time.time())}"
+    headers = {"X-Recording-Id": recording_id, "X-Run-Id": seed_run_id}
+    for attempt in range(10):
+        httpx.post(f"{gateway}/api/recordings/{recording_id}/clear", timeout=10)
+        resp = httpx.post(f"{gateway}/api/orders", json=payload, headers=headers, timeout=10)
+        if resp.status_code >= 400:
+            time.sleep(2)
+            continue
+        rec = httpx.get(f"{gateway}/api/recordings/{recording_id}", timeout=10)
+        if rec.status_code == 200 and rec.json().get("items"):
+            try:
+                httpx.post(f"{RG_ORDER_BASE}/internal/cleanup/{seed_run_id}", timeout=10)
+                httpx.post(f"{RG_INVENTORY_BASE}/internal/cleanup/{seed_run_id}", timeout=10)
+            except Exception:
+                pass
+            return
+        time.sleep(2)
+    raise RuntimeError(f"failed to seed recording: {recording_id}")
 
 
 def create_run(
