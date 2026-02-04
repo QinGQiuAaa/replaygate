@@ -5,6 +5,10 @@ from pydantic import BaseModel
 
 app = FastAPI(title='ReplayGate Diff Engine')
 
+@app.get('/health')
+def health():
+    return {'status': 'ok'}
+
 class DiffRequest(BaseModel):
     run_id: str
     rules: dict = {}

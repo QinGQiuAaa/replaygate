@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: replaygate-runner-template
+  namespace: replaygate
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: runner
+          image: replaygate-runner-job:latest
+          env:
+            - name: RUNNER_NAME
+              value: replay
+            - name: RUN_CONTEXT_JSON
+              value: "{}"
+          volumeMounts:
+            - name: artifacts
+              mountPath: /artifacts
+      volumes:
+        - name: artifacts
+          hostPath:
+            path: /artifacts

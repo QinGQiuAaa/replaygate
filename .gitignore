@@ -1,6 +1,57 @@
+﻿# Local generated artifacts
+artifacts/
+console-web/node_modules/
+console-web/dist/
 
-# private notes
- talk-notes.md
+# OS
+.DS_Store
+Thumbs.db
 
-# private notes
- talk-notes.md
+# local artifacts
+console-web/node_modules/
+**/node_modules/
+**/__pycache__/
+*.pyc
+
+# local docs (do not commit)
+项目.docx
+*.docx
+
+# Generated/runtime
+.hypothesis/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Playwright outputs
+tests/ui-e2e/test-results/
+tests/ui-e2e/playwright-report/
+tests/ui-e2e/.playwright/
+
+# Kind
+k8s/kind-config.generated.yaml
+# runtime artifacts
+artifacts/
+
+# python caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.hypothesis/
+
+# node
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# playwright
+tests/ui-e2e/test-results/
+tests/ui-e2e/playwright-report/
+tests/ui-e2e/.playwright/
+
+# generated
+k8s/kind-config.generated.yaml
+
+# docs (local)
+*.docx

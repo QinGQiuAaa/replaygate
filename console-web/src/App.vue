@@ -3,8 +3,10 @@
     <el-header class="header">
       <div class="brand">ReplayGate Console</div>
       <div class="nav">
-        <el-button type="primary" plain @click="$router.push('/')">任务列表</el-button>
+        <el-button type="primary" plain @click="$router.push('/')">Dashboard</el-button>
+        <el-button plain @click="$router.push('/runs')">任务列表</el-button>
         <el-button type="success" plain @click="$router.push('/runs/new')">创建任务</el-button>
+        <el-button type="warning" plain @click="$router.push('/settings')">设置</el-button>
       </div>
     </el-header>
     <el-main class="main">

@@ -1,5 +1,8 @@
 ﻿param(
-  [double]$StrictTolerance = 0.05
+  [double]$StrictTolerance = 0.05,
+  [string]$Runners = 'replay',
+  [string]$BaselineRunId = '',
+  [switch]$SaveAsBaseline
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,6 +24,8 @@ function Wait-For($url) {
   throw "Service not ready: $url"
 }
 
+$runnersList = $Runners -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne '' }
+
 Write-Host "等待平台与网关就绪..."
 Wait-For "$platformApi/health"
 Wait-For "$gateway/health"
@@ -40,14 +45,22 @@ $runBody = @{
   baseline_version = "v1"
   candidate_version = "v2"
   strict_tolerance = $StrictTolerance
-} | ConvertTo-Json
+  runners = @($runnersList)
+}
+
+if ($BaselineRunId -and $BaselineRunId.Trim() -ne '') {
+  $runBody.baseline_run_id = $BaselineRunId.Trim()
+}
+
+$runBody = $runBody | ConvertTo-Json
 
 $run = Invoke-RestMethod -Method Post -Uri "$platformApi/runs" -Body $runBody -ContentType "application/json"
 $runId = $run.id
 Write-Host "Run ID: $runId"
+Write-Host "Runners: $($runnersList -join ', ')"
 
 Write-Host "[3/4] 等待回放完成..."
-for ($i = 0; $i -lt 30; $i++) {
+for ($i = 0; $i -lt 60; $i++) {
   Start-Sleep -Seconds 2
   $state = Invoke-RestMethod -Method Get -Uri "$platformApi/runs/$runId"
   if ($state.status -eq "COMPLETED" -or $state.status -eq "FAILED") {
@@ -56,20 +69,27 @@ for ($i = 0; $i -lt 30; $i++) {
   }
 }
 
-Write-Host "[4/4] 获取Verdict与Artifacts..."
-$verdict = Invoke-RestMethod -Method Get -Uri "$platformApi/runs/$runId/verdict"
+Write-Host "[4/4] 输出Verdict与Artifacts..."
+$state = Invoke-RestMethod -Method Get -Uri "$platformApi/runs/$runId"
 $artifacts = Invoke-RestMethod -Method Get -Uri "$platformApi/runs/$runId/artifacts"
 
-Write-Host "Verdict: $($verdict.verdict)"
-if ($verdict.reasons) {
-  Write-Host "Reasons:"
-  $verdict.reasons | ForEach-Object {
-    Write-Host ("- {0} | {1} | observed={2} | threshold={3}" -f $_.domain, $_.rule_or_metric, $_.observed, $_.threshold)
+Write-Host "Overall Verdict: $($state.overall_verdict)"
+if ($state.runner_results) {
+  Write-Host "Runner Results:"
+  $state.runner_results | ForEach-Object {
+    Write-Host "- $($_.name): $($_.verdict)"
+    if ($_.reasons) {
+      $_.reasons | ForEach-Object {
+        Write-Host ("  - {0} | {1} | observed={2} | threshold={3}" -f $_.domain, $_.rule_or_metric, $_.observed, $_.threshold)
+      }
+    }
   }
 }
+
 Write-Host "Artifacts:"
 $artifacts.items | ForEach-Object { Write-Host "- $($_.name)" }
 
-Write-Host "触发清理..."
-Invoke-RestMethod -Method Post -Uri "$platformApi/runs/$runId/cleanup" | Out-Null
+if ($SaveAsBaseline) {
+  Write-Host "baseline_run_id: $runId"
+}
 Write-Host "完成。"

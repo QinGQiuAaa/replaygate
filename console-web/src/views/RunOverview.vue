@@ -17,27 +17,54 @@
       <el-descriptions border :column="2">
         <el-descriptions-item label="任务名称">{{ run.name }}</el-descriptions-item>
         <el-descriptions-item label="状态">{{ run.status }}</el-descriptions-item>
+        <el-descriptions-item label="执行器">{{ run.executor || 'local' }}</el-descriptions-item>
+        <el-descriptions-item label="Runners">{{ (run.runners || []).join(', ') }}</el-descriptions-item>
         <el-descriptions-item label="Baseline">{{ run.baseline_version }}</el-descriptions-item>
         <el-descriptions-item label="Candidate">{{ run.candidate_version }}</el-descriptions-item>
-        <el-descriptions-item label="Verdict">
-          <el-tag v-if="run.verdict?.verdict === 'PASS'" type="success">PASS</el-tag>
-          <el-tag v-else-if="run.verdict?.verdict === 'FAIL'" type="danger">FAIL</el-tag>
-          <el-tag v-else type="info">N/A</el-tag>
+        <el-descriptions-item label="Overall Verdict">
+          <span data-testid="overview-overall-verdict">
+            <el-tag v-if="run.overall_verdict === 'PASS'" type="success">PASS</el-tag>
+            <el-tag v-else-if="run.overall_verdict === 'FAIL'" type="danger">FAIL</el-tag>
+            <el-tag v-else type="info">N/A</el-tag>
+          </span>
         </el-descriptions-item>
         <el-descriptions-item label="Diff率">{{ run.diff_summary?.diff_rate ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="Schema Breaking">{{ run.diff_summary?.schema_breaking ?? '-' }}</el-descriptions-item>
-        <el-descriptions-item label="Strict Mismatch">{{ run.diff_summary?.strict_mismatches ?? '-' }}</el-descriptions-item>
       </el-descriptions>
 
       <div class="section">
-        <div class="section-title">Fail原因</div>
-        <el-table :data="run.verdict?.reasons || []" size="small">
-          <el-table-column prop="domain" label="域" width="140" />
-          <el-table-column prop="rule_or_metric" label="规则/指标" width="180" />
-          <el-table-column prop="observed" label="Observed" />
-          <el-table-column prop="threshold" label="Threshold" />
-          <el-table-column prop="evidence_link" label="Evidence" />
-        </el-table>
+        <div class="section-title">Runner Results</div>
+        <div class="runner-grid">
+          <el-card
+            v-for="runner in run.runner_results || []"
+            :key="runner.name"
+            class="runner-card"
+            :data-testid="`overview-runner-card-${runner.name}`"
+          >
+            <div class="runner-header">
+              <div class="runner-name">{{ runner.name }}</div>
+              <el-tag v-if="runner.verdict === 'PASS'" type="success">PASS</el-tag>
+              <el-tag v-else-if="runner.verdict === 'FAIL'" type="danger">FAIL</el-tag>
+              <el-tag v-else type="info">N/A</el-tag>
+            </div>
+            <el-table :data="runner.reasons || []" size="small">
+              <el-table-column prop="domain" label="域" width="140" />
+              <el-table-column prop="rule_or_metric" label="规则/指标" width="180" />
+              <el-table-column prop="observed" label="Observed" />
+              <el-table-column prop="threshold" label="Threshold" />
+            </el-table>
+            <div v-if="runner.artifacts_files?.length" class="artifact-links">
+              <el-link
+                v-for="file in runner.artifacts_files"
+                :key="file"
+                :href="apiBase + (artifactMap[file] || '')"
+                target="_blank"
+                :data-testid="file === 'diff_report.json' ? 'overview-download-diff' : null"
+              >
+                {{ file }}
+              </el-link>
+            </div>
+          </el-card>
+        </div>
       </div>
     </div>
   </el-card>
@@ -46,18 +73,28 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
-import { cleanupRun, getRun } from '../api'
-import type { Run } from '../types/api'
+import { cleanupRun, getArtifacts, getRun } from '../api'
+import type { ArtifactItem, Run } from '../types/api'
 
 const route = useRoute()
 const run = ref<Run | null>(null)
 const loading = ref(false)
 const cleanupLoading = ref(false)
+const artifacts = ref<ArtifactItem[]>([])
+const artifactMap = ref<Record<string, string>>({})
+const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:8080'
 
 const refresh = async () => {
   loading.value = true
   try {
     run.value = await getRun(String(route.params.id))
+    const data = await getArtifacts(String(route.params.id))
+    artifacts.value = data.items
+    const map: Record<string, string> = {}
+    data.items.forEach((item) => {
+      if (item.name && item.download_url) map[item.name] = item.download_url
+    })
+    artifactMap.value = map
   } finally {
     loading.value = false
   }
@@ -98,6 +135,29 @@ onMounted(refresh)
 }
 .section-title {
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+}
+.runner-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.runner-card {
+  margin-bottom: 12px;
+}
+.runner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.runner-name {
+  font-weight: 600;
+}
+.artifact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
 }
 </style>

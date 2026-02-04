@@ -1,12 +1,27 @@
 ﻿import axios from 'axios'
-import type { ArtifactListResponse, CleanupResponse, Run, RunCreateRequest, RunListResponse, Verdict } from './types/api'
+import type {
+  ArtifactListResponse,
+  CleanupResponse,
+  Run,
+  RunCreateRequest,
+  RunListResponse,
+  RunMetricsResponse,
+  SettingsResponse,
+  SettingsUpdateRequest,
+  Verdict,
+} from './types/api'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE || 'http://localhost:8080',
 })
 
-export async function listRuns(): Promise<RunListResponse> {
-  const { data } = await api.get('/runs')
+export async function listRuns(params?: Record<string, any>): Promise<RunListResponse> {
+  const { data } = await api.get('/runs', { params })
+  return data
+}
+
+export async function listRunMetrics(limit = 20): Promise<RunMetricsResponse> {
+  const { data } = await api.get('/runs/metrics', { params: { limit } })
   return data
 }
 
@@ -32,5 +47,15 @@ export async function getArtifacts(id: string): Promise<ArtifactListResponse> {
 
 export async function cleanupRun(id: string): Promise<CleanupResponse> {
   const { data } = await api.post(`/runs/${id}/cleanup`)
+  return data
+}
+
+export async function getSettings(): Promise<SettingsResponse> {
+  const { data } = await api.get('/settings')
+  return data
+}
+
+export async function updateSettings(payload: SettingsUpdateRequest): Promise<SettingsResponse> {
+  const { data } = await api.put('/settings', payload)
   return data
 }

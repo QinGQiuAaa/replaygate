@@ -76,6 +76,36 @@ services:
     ports:
       - '8091:8091'
 
+  perf-runner:
+    build: ./replaygate-platform/perf-runner
+    environment:
+      ARTIFACTS_DIR: /artifacts
+    depends_on:
+      - flashsale-gateway
+    ports:
+      - '8093:8093'
+    volumes:
+      - ./artifacts:/artifacts
+
+  security-runner:
+    build: ./replaygate-platform/security-runner
+    environment:
+      ARTIFACTS_DIR: /artifacts
+      WORKSPACE_DIR: /workspace
+    depends_on:
+      - flashsale-gateway
+    ports:
+      - '8094:8094'
+    volumes:
+      - ./artifacts:/artifacts
+      - ./:/workspace
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8094"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
   platform-api:
     build: ./replaygate-platform/platform-api
     environment:
@@ -84,6 +114,7 @@ services:
       ARTIFACTS_DIR: /artifacts
       ORDER_SERVICE_URL: http://flashsale-order:8001
       INVENTORY_SERVICE_URL: http://flashsale-inventory:8002
+      OTEL_TRACES_EXPORTER: console
     depends_on:
       - postgres
       - rabbitmq
@@ -100,15 +131,27 @@ services:
       GATEWAY_URL: http://flashsale-gateway:8000
       DIFF_ENGINE_URL: http://diff-engine:8090
       GATE_URL: http://gate:8091
+      PERF_RUNNER_URL: http://perf-runner:8093
+      SECURITY_RUNNER_URL: http://security-runner:8094
+      PLATFORM_API_URL: http://platform-api:8080
       ARTIFACTS_DIR: /artifacts
+      CONTRACTS_DIR: /contracts
+      RUNNERS_DIR: /runners
+      ENABLE_K8S_EXECUTOR: ${ENABLE_K8S_EXECUTOR:-false}
+      K8S_NAMESPACE: ${K8S_NAMESPACE:-replaygate}
+      OTEL_TRACES_EXPORTER: console
     depends_on:
       - postgres
       - rabbitmq
       - diff-engine
       - gate
       - flashsale-gateway
+      - perf-runner
+      - security-runner
     volumes:
       - ./artifacts:/artifacts
+      - ./contracts:/contracts:ro
+      - ./runners:/runners
 
   console-web:
     build: ./console-web
@@ -118,6 +161,29 @@ services:
       - '5173:5173'
     depends_on:
       - platform-api
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - '9090:9090'
+    depends_on:
+      - platform-api
+
+  grafana:
+    image: grafana/grafana:10.4.5
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./monitoring/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+      - ./monitoring/grafana/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+      - ./monitoring/grafana/dashboard.json:/var/lib/grafana/dashboards/replaygate.json:ro
+    depends_on:
+      - prometheus
 
 volumes:
   pgdata:

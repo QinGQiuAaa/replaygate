@@ -8,6 +8,37 @@ paths:
   /runs:
     get:
       summary: List runs
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: page_size
+          schema:
+            type: integer
+            default: 20
+        - in: query
+          name: verdict
+          schema:
+            type: string
+        - in: query
+          name: runner
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+        - in: query
+          name: since
+          schema:
+            type: string
+        - in: query
+          name: until
+          schema:
+            type: string
       responses:
         '200':
           description: A list of runs
@@ -30,6 +61,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Run'
+  /runs/metrics:
+    get:
+      summary: List run metrics
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Metrics list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunMetricsResponse'
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      responses:
+        '200':
+          description: Prometheus metrics output
+          content:
+            text/plain:
+              schema:
+                type: string
+  /settings:
+    get:
+      summary: Get settings
+      responses:
+        '200':
+          description: Settings response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsResponse'
+    put:
+      summary: Update settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdateRequest'
+      responses:
+        '200':
+          description: Settings response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsResponse'
   /runs/{id}:
     get:
       summary: Get run detail
@@ -63,7 +145,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Verdict'
+                $ref: '#/components/schemas/OverallVerdict'
         '404':
           description: Verdict not found
   /runs/{id}/artifacts:
@@ -124,6 +206,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Run'
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
     RunCreateRequest:
       type: object
       required:
@@ -146,6 +234,19 @@ components:
         candidate_version:
           type: string
           default: v2
+        baseline_run_id:
+          type: string
+          nullable: true
+        executor:
+          type: string
+        runners:
+          type: array
+          items:
+            type: string
+          default: [replay]
+        executor:
+          type: string
+          default: local
         strict_tolerance:
           type: number
           default: 0.05
@@ -173,6 +274,20 @@ components:
           type: string
         candidate_version:
           type: string
+        baseline_run_id:
+          type: string
+          nullable: true
+        runners:
+          type: array
+          items:
+            type: string
+        runner_results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunnerResult'
+        overall_verdict:
+          type: string
+          enum: [PASS, FAIL]
         strict_tolerance:
           type: number
         rules:
@@ -247,6 +362,16 @@ components:
     GateThresholds:
       type: object
       properties:
+        replay:
+          $ref: '#/components/schemas/ReplayThresholds'
+        perf:
+          $ref: '#/components/schemas/PerfThresholds'
+        security:
+          $ref: '#/components/schemas/SecurityThresholds'
+        compat:
+          $ref: '#/components/schemas/CompatThresholds'
+        obs:
+          $ref: '#/components/schemas/ObsThresholds'
         max_diff_rate:
           type: number
           default: 0.05
@@ -256,6 +381,63 @@ components:
         max_strict_mismatches:
           type: integer
           default: 0
+    ReplayThresholds:
+      type: object
+      properties:
+        max_diff_rate:
+          type: number
+          default: 0.05
+        max_schema_breaking:
+          type: integer
+          default: 0
+        max_strict_mismatches:
+          type: integer
+          default: 0
+    PerfThresholds:
+      type: object
+      properties:
+        max_error_rate_pct:
+          type: number
+          default: 0.5
+        max_p99_ms:
+          type: number
+          default: 500
+        vus:
+          type: integer
+          default: 5
+        duration:
+          type: string
+          default: 5s
+    ObsThresholds:
+      type: object
+      properties:
+        max_error_rate_pct:
+          type: number
+          default: 0.5
+        max_p99_ms:
+          type: number
+          default: 500
+        window:
+          type: string
+          default: run
+    SecurityThresholds:
+      type: object
+      properties:
+        max_high:
+          type: integer
+          default: 0
+        max_medium:
+          type: integer
+          default: 0
+    CompatThresholds:
+      type: object
+      properties:
+        max_breaking_changes:
+          type: integer
+          default: 0
+        mode:
+          type: string
+          default: strict
     Verdict:
       type: object
       properties:
@@ -266,6 +448,34 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VerdictReason'
+    RunnerResult:
+      type: object
+      properties:
+        name:
+          type: string
+        verdict:
+          type: string
+          enum: [PASS, FAIL]
+        reasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerdictReason'
+        artifacts_files:
+          type: array
+          items:
+            type: string
+        metrics:
+          type: object
+    OverallVerdict:
+      type: object
+      properties:
+        overall_verdict:
+          type: string
+          enum: [PASS, FAIL]
+        runner_results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunnerResult'
     VerdictReason:
       type: object
       properties:
@@ -280,6 +490,8 @@ components:
         time_window:
           type: string
         evidence_link:
+          type: string
+        baseline_run_id:
           type: string
     ArtifactListResponse:
       type: object
@@ -297,6 +509,69 @@ components:
           type: integer
         download_url:
           type: string
+    RunMetricsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunMetric'
+        summary:
+          type: object
+          properties:
+            pass:
+              type: integer
+            fail:
+              type: integer
+    RunMetric:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+        overall_verdict:
+          type: string
+        p99_ms:
+          type: number
+          nullable: true
+        error_rate_pct:
+          type: number
+          nullable: true
+        rps:
+          type: number
+          nullable: true
+    ThresholdTemplate:
+      type: object
+      properties:
+        name:
+          type: string
+        thresholds:
+          type: object
+    SettingsUpdateRequest:
+      type: object
+      properties:
+        default_executor:
+          type: string
+        threshold_templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ThresholdTemplate'
+        active_template:
+          type: string
+    SettingsResponse:
+      type: object
+      properties:
+        default_executor:
+          type: string
+        threshold_templates:
+          type: array
+          items:
+            $ref: '#/components/schemas/ThresholdTemplate'
+        active_template:
+          type: string
+        env:
+          type: object
     CleanupResponse:
       type: object
       properties:
